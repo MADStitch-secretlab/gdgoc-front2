@@ -145,13 +145,14 @@ export default function GamePage() {
 
     // 시간 감소
     timeIntervalRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
+      setTimeLeft((prevTime) => {
+        const newTime = prevTime - 1;
+        if (newTime <= 0) {
           endGame();
           router.push("/result");
           return 0;
         }
-        return prev - 1;
+        return newTime;
       });
     }, 1000);
 

@@ -8,14 +8,21 @@ const rankings: Record<Difficulty, Array<{ username: string; score: number; time
   hard: [],
 };
 
+// 타입 가드 함수
+function isDifficulty(value: unknown): value is Difficulty {
+  return typeof value === "string" && ["easy", "medium", "hard"].includes(value);
+}
+
 // GET: 랭킹 조회
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const difficulty = searchParams.get("difficulty") as Difficulty;
+  const difficultyParam = searchParams.get("difficulty");
 
-  if (!difficulty || !["easy", "medium", "hard"].includes(difficulty)) {
+  if (!difficultyParam || !isDifficulty(difficultyParam)) {
     return NextResponse.json({ error: "Invalid difficulty" }, { status: 400 });
   }
+
+  const difficulty: Difficulty = difficultyParam;
 
   const ranking = rankings[difficulty]
     .sort((a, b) => b.score - a.score)
@@ -34,15 +41,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { username, difficulty, score } = body;
+    const { username, difficulty: difficultyParam, score } = body;
 
-    if (!username || !difficulty || typeof score !== "number") {
+    if (!username || !difficultyParam || typeof score !== "number") {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    if (!["easy", "medium", "hard"].includes(difficulty)) {
+    if (!isDifficulty(difficultyParam)) {
       return NextResponse.json({ error: "Invalid difficulty" }, { status: 400 });
     }
+
+    const difficulty: Difficulty = difficultyParam;
 
     // 점수 추가
     rankings[difficulty].push({
@@ -67,7 +76,7 @@ export async function POST(request: NextRequest) {
       }));
 
     return NextResponse.json({ status: "saved", ranking });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

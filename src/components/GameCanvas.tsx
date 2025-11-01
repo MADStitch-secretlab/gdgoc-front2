@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Creature } from "@/types/game";
 
 interface GameCanvasProps {

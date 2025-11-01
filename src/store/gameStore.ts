@@ -5,8 +5,8 @@ import { Difficulty, GameState } from "@/types/game";
 interface GameStore extends GameState {
   setUsername: (username: string) => void;
   setDifficulty: (difficulty: Difficulty) => void;
-  setScore: (score: number) => void;
-  setTimeLeft: (timeLeft: number) => void;
+  setScore: (score: number | ((prev: number) => number)) => void;
+  setTimeLeft: (timeLeft: number | ((prev: number) => number)) => void;
   startGame: () => void;
   endGame: () => void;
   resetGame: () => void;
@@ -27,8 +27,14 @@ export const useGameStore = create<GameStore>()(
       ...initialState,
       setUsername: (username) => set({ username }),
       setDifficulty: (difficulty) => set({ difficulty }),
-      setScore: (score) => set({ score }),
-      setTimeLeft: (timeLeft) => set({ timeLeft }),
+      setScore: (score) =>
+        set((state) => ({
+          score: typeof score === "function" ? score(state.score) : score,
+        })),
+      setTimeLeft: (timeLeft) =>
+        set((state) => ({
+          timeLeft: typeof timeLeft === "function" ? timeLeft(state.timeLeft) : timeLeft,
+        })),
       startGame: () => set({ isPlaying: true, isGameOver: false, score: 0, timeLeft: 60 }),
       endGame: () => set({ isPlaying: false, isGameOver: true }),
       resetGame: () => set(initialState),
